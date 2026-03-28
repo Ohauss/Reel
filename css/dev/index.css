@@ -193,17 +193,22 @@
 .products__slider .swiper-slide-visible {
   opacity: 1;
 }
+.products__scrollbar {
+  position: relative !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+}
 .products__scrollbar.swiper-scrollbar {
-  position: relative;
-  inset: 0;
-  border-radius: 0;
   background-color: #e0e0e0;
-  width: 100%;
   height: 0.125rem;
+  border-radius: 0;
+  inset: auto !important;
 }
 .products__scrollbar .swiper-scrollbar-drag {
   cursor: pointer;
   background-color: #666;
+  height: 100%;
 }
 .products__slider-btn {
   transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
@@ -379,7 +384,7 @@ body::after {
     border-left: none;
   }
   .products__scrollbar {
-    display: none;
+    display: none !important;
   }
 }
 

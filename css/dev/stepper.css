@@ -76,7 +76,7 @@ h6 {
 @font-face { 
 	font-family: "iconfont"; 
 	font-display: swap;
-	src: url("../assets/fonts/iconfont.woff2?afc49530d65d643087e5e71338065898") format("woff2"); 
+	src: url("../assets/fonts/iconfont.woff2?2e0aea5c1ecb18ea97fc02e7951b1ea1") format("woff2"); 
 } 
 [class*="--icon-"]::before{
 	font-family: iconfont; 

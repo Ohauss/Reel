@@ -873,19 +873,21 @@ button.swiper-pagination-bullet {
   margin-top: 2rem;
 }
 .product-similar__scrollbar {
-  margin-top: 2rem;
+  position: relative !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
 }
 .product-similar__scrollbar.swiper-scrollbar {
-  position: relative;
-  inset: 0;
-  border-radius: 0;
   background-color: #e0e0e0;
-  width: 100%;
   height: 0.125rem;
+  border-radius: 0;
+  inset: auto !important;
 }
 .product-similar__scrollbar .swiper-scrollbar-drag {
   cursor: pointer;
   background-color: #666;
+  height: 100%;
 }
 .product-similar__slider-btn {
   transition: background 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
@@ -933,6 +935,12 @@ button.swiper-pagination-bullet {
   }
   .product-testimonials__right {
     grid-column: span 8;
+  }
+}
+
+@media (max-width: 62em) {
+  .product-similar__scrollbar {
+    display: none !important;
   }
 }
 
@@ -1033,6 +1041,9 @@ button.swiper-pagination-bullet {
   .product-similar__title {
     font-size: 1.5rem;
   }
+  .product-similar__scrollbar {
+    margin-top: 1rem;
+  }
 }
 
 @media (min-width: 20em) and (max-width: 120em) {
@@ -1095,6 +1106,9 @@ button.swiper-pagination-bullet {
   .product-similar__title {
     font-size: clamp( 1.5rem , 1.4rem  +  0.5vw , 2rem );
   }
+  .product-similar__scrollbar {
+    margin-top: clamp( 1rem , 0.8rem  +  1vw , 2rem );
+  }
 }
 
 @media (min-width: 120em) {
@@ -1156,6 +1170,9 @@ button.swiper-pagination-bullet {
   }
   .product-similar__title {
     font-size: 2rem;
+  }
+  .product-similar__scrollbar {
+    margin-top: 2rem;
   }
 }
 
