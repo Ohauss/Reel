@@ -211,7 +211,7 @@ async function renderResults(container, q) {
   }
   html += `
     <div class="search-dropdown__footer">
-      <a href="/catalog-main.html?q=${encodeURIComponent(q)}">
+      <a href="catalog-main.html?q=${encodeURIComponent(q)}">
         All results for "${q}"
       </a>
     </div>
