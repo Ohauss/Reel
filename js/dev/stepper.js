@@ -177,12 +177,12 @@ async function renderResults(container, q) {
     ...new Set(products.map((p) => p.category).filter(Boolean))
   ];
   const matchedCategories = categories.filter((c) => c.toLowerCase().includes(ql)).slice(0, 4);
-  const seen2 = /* @__PURE__ */ new Set();
+  const seen = /* @__PURE__ */ new Set();
   const matchedCollections = [];
   products.forEach((p) => {
     getAllCollections(p).forEach((col) => {
-      if (col.toLowerCase().includes(ql) && !seen2.has(col)) {
-        seen2.add(col);
+      if (col.toLowerCase().includes(ql) && !seen.has(col)) {
+        seen.add(col);
         matchedCollections.push(col);
       }
     });
@@ -356,25 +356,38 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = `/catalog-main.html?${params.toString()}`;
   });
 });
-document.addEventListener("DOMContentLoaded", () => {
+(function() {
+  if (window.__footerSpollersInitialized) return;
+  window.__footerSpollersInitialized = true;
   const spollers = document.querySelectorAll("[data-spoller]");
   const speed = 300;
   spollers.forEach((spollerBlock) => {
     const button = spollerBlock.querySelector(".footer__caption");
     const body = spollerBlock.querySelector(".footer__body");
+    if (!button || !body) return;
     const breakpoint = parseInt(spollerBlock.dataset.spoller, 10);
+    let isAnimating = false;
     function toggle() {
+      if (isAnimating) return;
+      isAnimating = true;
       const isOpen = button.getAttribute("aria-expanded") === "true";
       button.setAttribute("aria-expanded", String(!isOpen));
       if (isOpen) {
         slideUp(body, speed);
-        setTimeout(() => body.hidden = true, speed);
+        setTimeout(() => {
+          body.hidden = true;
+          isAnimating = false;
+        }, speed);
       } else {
         body.hidden = false;
         slideDown(body, speed);
+        setTimeout(() => {
+          isAnimating = false;
+        }, speed);
       }
     }
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
       if (window.innerWidth <= breakpoint) {
         toggle();
       }
@@ -393,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkWidth();
     window.addEventListener("resize", checkWidth);
   });
-});
+})();
 class DynamicAdapt {
   constructor() {
     this.type = "max";
@@ -5959,10 +5972,6 @@ const disableScroll = () => {
   vars.html.classList.add("dis-scroll");
   vars.html.style.top = `-${vars.scrollY}px`;
 };
-const disablescroll = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  disableScroll
-}, Symbol.toStringTag, { value: "Module" }));
 const enableScroll = () => {
   const fixBlocks = document == null ? void 0 : document.querySelectorAll(".fixed-block");
   const bodyEl = document.body;
@@ -5978,10 +5987,6 @@ const enableScroll = () => {
   bodyEl.removeAttribute("data-position");
   htmlEl.style.scrollBehavior = "smooth";
 };
-const enablescroll = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  enableScroll
-}, Symbol.toStringTag, { value: "Module" }));
 function initMiniCart() {
   const miniCart = document.querySelector(".mini-cart");
   if (!miniCart) return;
@@ -6094,145 +6099,45 @@ function initMiniCart() {
   renderMiniCart();
 }
 initMiniCart();
-const scriptRel = "modulepreload";
-const assetsURL = function(dep, importerUrl) {
-  return new URL(dep, importerUrl).href;
-};
-const seen = {};
-const __vitePreload = function preload(baseModule, deps, importerUrl) {
-  let promise = Promise.resolve();
-  if (deps && deps.length > 0) {
-    let allSettled2 = function(promises) {
-      return Promise.all(
-        promises.map(
-          (p) => Promise.resolve(p).then(
-            (value) => ({ status: "fulfilled", value }),
-            (reason) => ({ status: "rejected", reason })
-          )
-        )
-      );
-    };
-    const links = document.getElementsByTagName("link");
-    const cspNonceMeta = document.querySelector(
-      "meta[property=csp-nonce]"
-    );
-    const cspNonce = (cspNonceMeta == null ? void 0 : cspNonceMeta.nonce) || (cspNonceMeta == null ? void 0 : cspNonceMeta.getAttribute("nonce"));
-    promise = allSettled2(
-      deps.map((dep) => {
-        dep = assetsURL(dep, importerUrl);
-        if (dep in seen) return;
-        seen[dep] = true;
-        const isCss = dep.endsWith(".css");
-        const cssSelector = isCss ? '[rel="stylesheet"]' : "";
-        const isBaseRelative = !!importerUrl;
-        if (isBaseRelative) {
-          for (let i = links.length - 1; i >= 0; i--) {
-            const link2 = links[i];
-            if (link2.href === dep && (!isCss || link2.rel === "stylesheet")) {
-              return;
-            }
-          }
-        } else if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
-          return;
-        }
-        const link = document.createElement("link");
-        link.rel = isCss ? "stylesheet" : scriptRel;
-        if (!isCss) {
-          link.as = "script";
-        }
-        link.crossOrigin = "";
-        link.href = dep;
-        if (cspNonce) {
-          link.setAttribute("nonce", cspNonce);
-        }
-        document.head.appendChild(link);
-        if (isCss) {
-          return new Promise((res, rej) => {
-            link.addEventListener("load", res);
-            link.addEventListener(
-              "error",
-              () => rej(new Error(`Unable to preload CSS for ${dep}`))
-            );
-          });
-        }
-      })
-    );
-  }
-  function handlePreloadError(err) {
-    const e = new Event("vite:preloadError", {
-      cancelable: true
-    });
-    e.payload = err;
-    window.dispatchEvent(e);
-    if (!e.defaultPrevented) {
-      throw err;
-    }
-  }
-  return promise.then((res) => {
-    for (const item of res || []) {
-      if (item.status !== "rejected") continue;
-      handlePreloadError(item.reason);
-    }
-    return baseModule().catch(handlePreloadError);
-  });
-};
-document.addEventListener("DOMContentLoaded", () => {
-  const catalogMenu = document.querySelector(".megamenu");
+(function() {
+  if (window.__megamenuInitialized) return;
+  window.__megamenuInitialized = true;
+  const menu = document.querySelector(".megamenu");
   const overlay = document.querySelector(".overlay");
-  if (!catalogMenu || !overlay) return;
-  const triggerBtns = document.querySelectorAll(".header__btn");
-  const triggerMobile = document.querySelectorAll(".mobile-menu__catalog");
-  const menuBtns = document.querySelectorAll(".megamenu__btn");
-  const contentBlocks = document.querySelectorAll(".megamenu__block");
-  const backBtn = document.querySelector(".megamenu__back");
-  const contentTitle = document.querySelector(".megamenu__content-title");
+  const triggers = document.querySelectorAll("[data-fls-megamenu]");
+  if (!menu || !overlay || !triggers.length) return;
+  console.log("MEGAMENU INIT");
+  const menuBtns = menu.querySelectorAll(".megamenu__btn");
+  const contentBlocks = menu.querySelectorAll(".megamenu__block");
+  const backBtn = menu.querySelector(".megamenu__back");
+  const contentTitle = menu.querySelector(".megamenu__content-title");
   const ITEMS_PER_TAB = 6;
-  const allTriggers = [...triggerBtns, ...triggerMobile];
   const isMobile = () => window.innerWidth <= 768;
-  let disableScroll2, enableScroll2;
-  async function loadScrollLock() {
-    if (disableScroll2) return;
-    const [disableModule, enableModule] = await Promise.all([
-      __vitePreload(() => Promise.resolve().then(() => disablescroll), true ? void 0 : void 0, import.meta.url),
-      __vitePreload(() => Promise.resolve().then(() => enablescroll), true ? void 0 : void 0, import.meta.url)
-    ]);
-    disableScroll2 = disableModule.disableScroll;
-    enableScroll2 = enableModule.enableScroll;
-  }
-  const showContent = (title) => {
-    catalogMenu.classList.add("megamenu--content-visible");
-    if (contentTitle) contentTitle.textContent = title;
-  };
-  const hideContent = () => {
-    catalogMenu.classList.remove("megamenu--content-visible");
-  };
-  backBtn == null ? void 0 : backBtn.addEventListener("click", hideContent);
-  const closeAllMenus = () => {
-    document.dispatchEvent(new CustomEvent("closeAllMenus"));
-  };
-  const openMenu = async (btn) => {
-    await loadScrollLock();
-    disableScroll2 == null ? void 0 : disableScroll2();
-    catalogMenu.classList.add("megamenu--visible");
+  const openMenu = (clickedBtn) => {
+    disableScroll();
+    menu.classList.add("megamenu--visible");
     overlay.classList.add("overlay--visible");
-    btn.classList.add("header__btn--active");
-    if (isMobile()) hideContent();
+    triggers.forEach((btn) => btn.classList.remove("megamenu-trigger--active"));
+    clickedBtn.classList.add("megamenu-trigger--active");
+    if (isMobile()) {
+      menu.classList.remove("megamenu--content-visible");
+    }
   };
   const closeMenu = () => {
-    enableScroll2 == null ? void 0 : enableScroll2();
-    catalogMenu.classList.remove("megamenu--visible");
+    enableScroll();
+    menu.classList.remove("megamenu--visible");
     overlay.classList.remove("overlay--visible");
-    allTriggers.forEach((btn) => btn.classList.remove("header__btn--active"));
-    hideContent();
+    triggers.forEach((btn) => btn.classList.remove("megamenu-trigger--active"));
+    menu.classList.remove("megamenu--content-visible");
   };
   const updateContent = (tabIndex) => {
     contentBlocks.forEach((block) => {
-      block.classList.remove("megamenu__block--visible");
       block.style.display = "none";
+      block.classList.remove("megamenu__block--visible");
     });
-    const startIndex = tabIndex * ITEMS_PER_TAB;
-    const endIndex = startIndex + ITEMS_PER_TAB;
-    for (let i = startIndex; i < endIndex && i < contentBlocks.length; i++) {
+    const start = tabIndex * ITEMS_PER_TAB;
+    const end = start + ITEMS_PER_TAB;
+    for (let i = start; i < end && i < contentBlocks.length; i++) {
       contentBlocks[i].style.display = "flex";
       setTimeout(() => {
         contentBlocks[i].classList.add("megamenu__block--visible");
@@ -6240,43 +6145,50 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   const switchTab = (index) => {
-    var _a;
+    var _a, _b;
     menuBtns.forEach((btn) => btn.classList.remove("megamenu__btn--active"));
-    if (menuBtns[index]) menuBtns[index].classList.add("megamenu__btn--active");
+    (_a = menuBtns[index]) == null ? void 0 : _a.classList.add("megamenu__btn--active");
     updateContent(index);
-    if (isMobile()) showContent((_a = menuBtns[index]) == null ? void 0 : _a.textContent.trim());
+    if (isMobile()) {
+      menu.classList.add("megamenu--content-visible");
+      if (contentTitle) {
+        contentTitle.textContent = (_b = menuBtns[index]) == null ? void 0 : _b.textContent.trim();
+      }
+    }
   };
-  document.addEventListener("closeAllMenus", closeMenu);
-  allTriggers.forEach((btn) => {
+  triggers.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (catalogMenu.classList.contains("megamenu--visible")) {
+      if (menu.classList.contains("megamenu--visible")) {
         closeMenu();
       } else {
-        closeAllMenus();
+        document.dispatchEvent(
+          new CustomEvent("closeAllMenus", { detail: "megamenu" })
+        );
         openMenu(btn);
       }
     });
   });
   menuBtns.forEach((btn, index) => {
-    btn.addEventListener("click", () => switchTab(index));
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      switchTab(index);
+    });
   });
   overlay.addEventListener("click", closeMenu);
-  document.addEventListener("click", (e) => {
-    if (catalogMenu.classList.contains("megamenu--visible") && !catalogMenu.contains(e.target) && !allTriggers.some((btn) => btn.contains(e.target))) {
-      closeMenu();
-    }
+  backBtn == null ? void 0 : backBtn.addEventListener(
+    "click",
+    () => menu.classList.remove("megamenu--content-visible")
+  );
+  document.addEventListener("closeAllMenus", (e) => {
+    if (e.detail !== "megamenu") closeMenu();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && catalogMenu.classList.contains("megamenu--visible")) {
-      closeMenu();
-    }
+    if (e.key === "Escape") closeMenu();
   });
-  switchTab(0);
-  document.querySelectorAll(".megamenu__link").forEach((link) => {
+  menu.querySelectorAll(".megamenu__link").forEach((link) => {
     link.addEventListener("click", (e) => {
-      const category = link.dataset.category;
-      const subcategory = link.dataset.subcategory;
+      const { category, subcategory } = link.dataset;
       if (!category && !subcategory) return;
       e.preventDefault();
       const params = new URLSearchParams();
@@ -6285,7 +6197,8 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = `/catalog-main.html?${params.toString()}`;
     });
   });
-});
+  switchTab(0);
+})();
 /*! js-cookie v3.0.5 | MIT */
 function assign(target) {
   for (var i = 1; i < arguments.length; i++) {
@@ -6392,62 +6305,49 @@ if (!api.get("cookie-block")) {
     cookieBlock.classList.remove("cookie-block--visible");
   });
 }
-document.addEventListener("DOMContentLoaded", () => {
-  const collectionsMenu = document.querySelector(".collections");
+(function() {
+  if (window.__collectionsInitialized) return;
+  window.__collectionsInitialized = true;
+  const menu = document.querySelector(".collections");
   const overlay = document.querySelector(".overlay");
-  if (!collectionsMenu || !overlay) return;
-  const triggerBtns = document.querySelectorAll("[data-fls-collections]");
-  const menuBtns = collectionsMenu.querySelectorAll(".collections__btn");
-  const contentBlocks = collectionsMenu.querySelectorAll(".collections__block");
-  const backBtn = collectionsMenu.querySelector(".collections__back");
-  const contentTitle = collectionsMenu.querySelector(
-    ".collections__content-title"
-  );
+  const triggers = document.querySelectorAll("[data-fls-collections]");
+  if (!menu || !overlay || !triggers.length) return;
+  console.log("COLLECTIONS INIT");
+  const menuBtns = menu.querySelectorAll(".collections__btn");
+  const contentBlocks = menu.querySelectorAll(".collections__block");
+  const backBtn = menu.querySelector(".collections__back");
+  const contentTitle = menu.querySelector(".collections__content-title");
   const ITEMS_PER_TAB = 3;
   const isMobile = () => window.innerWidth <= 768;
-  let disableScroll2, enableScroll2;
-  async function loadScrollLock() {
-    if (disableScroll2) return;
-    const [disableModule, enableModule] = await Promise.all([
-      __vitePreload(() => Promise.resolve().then(() => disablescroll), true ? void 0 : void 0, import.meta.url),
-      __vitePreload(() => Promise.resolve().then(() => enablescroll), true ? void 0 : void 0, import.meta.url)
-    ]);
-    disableScroll2 = disableModule.disableScroll;
-    enableScroll2 = enableModule.enableScroll;
-  }
-  const showContent = (title) => {
-    collectionsMenu.classList.add("collections--content-visible");
-    if (contentTitle) contentTitle.textContent = title;
-  };
-  const hideContent = () => {
-    collectionsMenu.classList.remove("collections--content-visible");
-  };
-  backBtn == null ? void 0 : backBtn.addEventListener("click", hideContent);
-  const openMenu = async () => {
-    await loadScrollLock();
-    disableScroll2 == null ? void 0 : disableScroll2();
-    collectionsMenu.classList.add("collections--visible");
+  const openMenu = (clickedBtn) => {
+    disableScroll();
+    menu.classList.add("collections--visible");
     overlay.classList.add("overlay--visible");
-    triggerBtns.forEach((btn) => btn.classList.add("collections-btn--active"));
-    if (isMobile()) hideContent();
+    triggers.forEach(
+      (btn) => btn.classList.remove("collections-trigger--active")
+    );
+    clickedBtn.classList.add("collections-trigger--active");
+    if (isMobile()) {
+      menu.classList.remove("collections--content-visible");
+    }
   };
   const closeMenu = () => {
-    enableScroll2 == null ? void 0 : enableScroll2();
-    collectionsMenu.classList.remove("collections--visible");
+    enableScroll();
+    menu.classList.remove("collections--visible");
     overlay.classList.remove("overlay--visible");
-    triggerBtns.forEach(
-      (btn) => btn.classList.remove("collections-btn--active")
+    triggers.forEach(
+      (btn) => btn.classList.remove("collections-trigger--active")
     );
-    hideContent();
+    menu.classList.remove("collections--content-visible");
   };
   const updateContent = (tabIndex) => {
     contentBlocks.forEach((block) => {
-      block.classList.remove("collections__block--visible");
       block.style.display = "none";
+      block.classList.remove("collections__block--visible");
     });
-    const startIndex = tabIndex * ITEMS_PER_TAB;
-    const endIndex = startIndex + ITEMS_PER_TAB;
-    for (let i = startIndex; i < endIndex && i < contentBlocks.length; i++) {
+    const start = tabIndex * ITEMS_PER_TAB;
+    const end = start + ITEMS_PER_TAB;
+    for (let i = start; i < end && i < contentBlocks.length; i++) {
       contentBlocks[i].style.display = "flex";
       setTimeout(() => {
         contentBlocks[i].classList.add("collections__block--visible");
@@ -6455,55 +6355,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   const switchTab = (index) => {
-    var _a;
+    var _a, _b;
     menuBtns.forEach((btn) => btn.classList.remove("collections__btn--active"));
-    if (menuBtns[index])
-      menuBtns[index].classList.add("collections__btn--active");
+    (_a = menuBtns[index]) == null ? void 0 : _a.classList.add("collections__btn--active");
     updateContent(index);
-    if (isMobile()) showContent((_a = menuBtns[index]) == null ? void 0 : _a.textContent.trim());
+    if (isMobile()) {
+      menu.classList.add("collections--content-visible");
+      if (contentTitle) {
+        contentTitle.textContent = (_b = menuBtns[index]) == null ? void 0 : _b.textContent.trim();
+      }
+    }
   };
-  document.addEventListener("closeAllMenus", closeMenu);
-  triggerBtns.forEach((btn) => {
+  triggers.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (collectionsMenu.classList.contains("collections--visible")) {
+      if (menu.classList.contains("collections--visible")) {
         closeMenu();
       } else {
-        document.dispatchEvent(new CustomEvent("closeAllMenus"));
-        openMenu();
+        document.dispatchEvent(
+          new CustomEvent("closeAllMenus", { detail: "collections" })
+        );
+        openMenu(btn);
       }
     });
   });
   menuBtns.forEach((btn, index) => {
-    btn.addEventListener("click", () => switchTab(index));
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      switchTab(index);
+    });
   });
   overlay.addEventListener("click", closeMenu);
-  document.addEventListener("click", (e) => {
-    if (collectionsMenu.classList.contains("collections--visible") && !collectionsMenu.contains(e.target) && ![...triggerBtns].some((btn) => btn.contains(e.target))) {
-      closeMenu();
-    }
+  backBtn == null ? void 0 : backBtn.addEventListener(
+    "click",
+    () => menu.classList.remove("collections--content-visible")
+  );
+  document.addEventListener("closeAllMenus", (e) => {
+    if (e.detail !== "collections") closeMenu();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && collectionsMenu.classList.contains("collections--visible")) {
-      closeMenu();
-    }
+    if (e.key === "Escape") closeMenu();
   });
-  collectionsMenu.querySelectorAll(".collections__link").forEach((link) => {
+  menu.querySelectorAll(".collections__link").forEach((link) => {
     link.addEventListener("click", (e) => {
-      const collection = link.dataset.collection;
-      const category = link.dataset.category;
-      const subcategory = link.dataset.subcategory;
-      if (!collection && !category && !subcategory) return;
+      const { collection, collections, category, subcategory } = link.dataset;
+      if (!collection && !collections && !category && !subcategory) return;
       e.preventDefault();
       const params = new URLSearchParams();
       if (collection) params.set("collection", collection);
+      if (collections) params.set("collections", collections);
       if (category) params.set("category", category);
       if (subcategory) params.set("subcategory", subcategory);
-      window.location.href = `/catalog-main.html?${params.toString()}`;
+      window.location.href = `catalog-main.html?${params.toString()}`;
     });
   });
   switchTab(0);
-});
+})();
 document.addEventListener("click", (e) => {
   const plus = e.target.closest(".stepper__plus");
   const minus = e.target.closest(".stepper__minus");
@@ -6520,7 +6427,6 @@ document.addEventListener("click", (e) => {
   cartStore.updateQty(row.dataset.id, qty);
 });
 export {
-  __vitePreload as _,
   disableScroll as d,
   enableScroll as e
 };
